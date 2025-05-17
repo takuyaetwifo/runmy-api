@@ -1,38 +1,30 @@
-from llama_cpp import Llama
-from flask import Flask, request, jsonify, render_template  # ← 追加
+from flask import Flask, request, jsonify, render_template
+import requests
 
 app = Flask(__name__)
 
-llm = Llama(
-    model_path="./models/mistral-7b-instruct-v0.2.Q4_K_M.gguf",
-    n_ctx=2048,
-    gpu_layers=40,
-    chat_format="mistral-instruct"
-)
+OLLAMA_URL = "http://localhost:11434/api/generate"
+MODEL_NAME = "llama3"
 
-
-
-@app.route("/", methods=["GET"])
+@app.route("/")
 def index():
     return render_template("chat.html")
 
-@app.route("/inference", methods=["POST"])
-def inference():
-    data = request.get_json()
-    prompt = data.get("prompt", "")
-    print("⚡️ 受信:", prompt)
-
-    # 履歴を使わず1ターンで送信
-    response = llm.create_chat_completion(
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=512
-    )
-
-    reply = response["choices"][0]["message"]["content"]
-    print("✅ GPT応答:", reply)
-    return jsonify({"response": reply})
-
-
+@app.route("/chat", methods=["POST"])
+def chat():
+    user_input = request.json["message"]
+    payload = {
+        "model": MODEL_NAME,
+        "prompt": user_input,
+        "stream": False
+    }
+    try:
+        res = requests.post(OLLAMA_URL, json=payload)
+        reply = res.json()["response"]
+        return jsonify({"reply": reply})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8888)
+    app.run(host="0.0.0.0", port=5000)
+
