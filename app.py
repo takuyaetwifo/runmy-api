@@ -1,5 +1,5 @@
-from flask import Flask, request, jsonify
 from llama_cpp import Llama
+from flask import Flask, request, jsonify, render_template  # ← 追加
 
 app = Flask(__name__)
 
@@ -9,6 +9,13 @@ llm = Llama(
     gpu_layers=40,
     chat_format="chatml"
 )
+
+
+
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("chat.html")
+
 
 @app.route("/inference", methods=["POST"])
 def inference():
