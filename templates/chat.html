@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Chat with GPT</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        #chat { border: 1px solid #ccc; padding: 1em; height: 300px; overflow-y: scroll; }
+        #userInput { width: 80%; }
+    </style>
+</head>
+<body>
+    <h1>Chat with GPT</h1>
+    <div id="chat"></div>
+    <input type="text" id="userInput" placeholder="メッセージを入力..." />
+    <button onclick="sendMessage()">送信</button>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById("userInput");
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chat = document.getElementById("chat");
+            chat.innerHTML += `<p><strong>あなた:</strong> ${message}</p>`;
+            input.value = "";
+
+            const res = await fetch("/inference", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: message })
+            });
+
+            const data = await res.json();
+            chat.innerHTML += `<p><strong>GPT:</strong> ${data.response}</p>`;
+            chat.scrollTop = chat.scrollHeight;
+        }
+    </script>
+</body>
+</html>
