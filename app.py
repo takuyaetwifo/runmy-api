@@ -16,16 +16,33 @@ llm = Llama(
 def index():
     return render_template("chat.html")
 
+chat_history = []  # グローバル履歴
 
 @app.route("/inference", methods=["POST"])
 def inference():
     data = request.get_json()
     prompt = data.get("prompt", "")
+
+    # ユーザーの入力を追加
+    chat_history.append({"role": "user", "content": prompt})
+
+    # ロールが交互になるよう調整（最初の assistant 発言を空に追加してもよい）
+    if len(chat_history) == 1:
+        chat_history.insert(0, {"role": "assistant", "content": ""})
+
+    print("⚡️ 送信:", chat_history)
+
     response = llm.create_chat_completion(
-        messages=[{"role": "user", "content": prompt}],
+        messages=chat_history,
         max_tokens=512
     )
-    return jsonify({"response": response["choices"][0]["message"]["content"]})
+
+    # assistantの応答を履歴に追加
+    reply = response["choices"][0]["message"]["content"]
+    chat_history.append({"role": "assistant", "content": reply})
+
+    return jsonify({"response": reply})
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8888)
