@@ -4,7 +4,7 @@ import requests
 app = Flask(__name__)
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "llama3"
+MODEL_NAME = "mistral"
 
 @app.route("/")
 def index():
