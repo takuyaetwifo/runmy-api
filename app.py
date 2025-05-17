@@ -6,7 +6,8 @@ app = Flask(__name__)
 llm = Llama(
     model_path="./models/mistral-7b-instruct-v0.2.Q4_K_M.gguf",
     n_ctx=2048,
-    gpu_layers=40
+    gpu_layers=40,
+    chat_format="default"  # ← ここ重要！
 )
 
 
